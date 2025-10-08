@@ -1,0 +1,214 @@
+<?php
+/**
+ * Authentication Functions
+ * Handles user registration, login, and authentication
+ */
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/session.php';
+
+/**
+ * Register a new user
+ */
+function register_user($email, $password, $first_name, $last_name) {
+    try {
+        $db = getDB();
+
+        // Check if email already exists
+        $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+
+        if ($stmt->fetch()) {
+            return ['success' => false, 'message' => 'Email already registered'];
+        }
+
+        // Hash password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Insert new user
+        $stmt = $db->prepare("
+            INSERT INTO users (email, password, first_name, last_name, created_at)
+            VALUES (?, ?, ?, ?, NOW())
+        ");
+
+        $stmt->execute([$email, $hashed_password, $first_name, $last_name]);
+
+        $user_id = $db->lastInsertId();
+
+        // Get the created user
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$user_id]);
+        $user = $stmt->fetch();
+
+        // Set session
+        set_user_session($user);
+
+        return [
+            'success' => true,
+            'message' => 'Registration successful',
+            'user_id' => $user_id
+        ];
+
+    } catch (PDOException $e) {
+        error_log("Registration error: " . $e->getMessage());
+        return ['success' => false, 'message' => 'Registration failed. Please try again.'];
+    }
+}
+
+/**
+ * Login user
+ */
+function login_user($email, $password, $remember = false) {
+    try {
+        $db = getDB();
+
+        // Get user by email
+        $stmt = $db->prepare("
+            SELECT id, email, password, first_name, last_name, role, status
+            FROM users
+            WHERE email = ?
+        ");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            return ['success' => false, 'message' => 'Invalid email or password'];
+        }
+
+        // Check if account is active
+        if ($user['status'] !== 'active') {
+            return ['success' => false, 'message' => 'Account is not active'];
+        }
+
+        // Verify password
+        if (!password_verify($password, $user['password'])) {
+            return ['success' => false, 'message' => 'Invalid email or password'];
+        }
+
+        // Set session
+        set_user_session($user);
+
+        // Handle remember me
+        if ($remember) {
+            $token = bin2hex(random_bytes(32));
+            $expires = time() + (30 * 24 * 60 * 60); // 30 days
+
+            // Store token in database
+            $stmt = $db->prepare("UPDATE users SET remember_token = ? WHERE id = ?");
+            $stmt->execute([$token, $user['id']]);
+
+            // Set cookie
+            setcookie('remember_token', $token, $expires, '/', '', false, true);
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Login successful',
+            'user' => [
+                'id' => $user['id'],
+                'email' => $user['email'],
+                'name' => $user['first_name'] . ' ' . $user['last_name'],
+                'role' => $user['role']
+            ]
+        ];
+
+    } catch (PDOException $e) {
+        error_log("Login error: " . $e->getMessage());
+        return ['success' => false, 'message' => 'Login failed. Please try again.'];
+    }
+}
+
+/**
+ * Logout user
+ */
+function logout_user() {
+    // Clear remember token if exists
+    if (isset($_COOKIE['remember_token'])) {
+        $db = getDB();
+        $stmt = $db->prepare("UPDATE users SET remember_token = NULL WHERE id = ?");
+        $stmt->execute([get_user_id()]);
+
+        setcookie('remember_token', '', time() - 3600, '/', '', false, true);
+    }
+
+    // Clear session
+    clear_user_session();
+
+    return ['success' => true, 'message' => 'Logged out successfully'];
+}
+
+/**
+ * Get current user
+ */
+function get_current_user_info() {
+    if (!is_logged_in()) {
+        return null;
+    }
+
+    try {
+        $db = getDB();
+        $stmt = $db->prepare("
+            SELECT id, email, first_name, last_name, role, status
+            FROM users
+            WHERE id = ?
+        ");
+        $stmt->execute([get_user_id()]);
+        return $stmt->fetch();
+
+    } catch (PDOException $e) {
+        error_log("Get user error: " . $e->getMessage());
+        return null;
+    }
+}
+
+/**
+ * Check remember token
+ */
+function check_remember_token() {
+    if (!isset($_COOKIE['remember_token'])) {
+        return false;
+    }
+
+    try {
+        $db = getDB();
+        $stmt = $db->prepare("
+            SELECT id, email, first_name, last_name, role
+            FROM users
+            WHERE remember_token = ? AND status = 'active'
+        ");
+        $stmt->execute([$_COOKIE['remember_token']]);
+        $user = $stmt->fetch();
+
+        if ($user) {
+            set_user_session($user);
+            return true;
+        }
+
+    } catch (PDOException $e) {
+        error_log("Remember token error: " . $e->getMessage());
+    }
+
+    return false;
+}
+
+/**
+ * Validate password strength
+ */
+function validate_password($password) {
+    if (strlen($password) < 8) {
+        return 'Password must be at least 8 characters long';
+    }
+
+    // Optional: Add more password requirements
+    // if (!preg_match('/[A-Z]/', $password)) {
+    //     return 'Password must contain at least one uppercase letter';
+    // }
+    // if (!preg_match('/[a-z]/', $password)) {
+    //     return 'Password must contain at least one lowercase letter';
+    // }
+    // if (!preg_match('/[0-9]/', $password)) {
+    //     return 'Password must contain at least one number';
+    // }
+
+    return true;
+}
