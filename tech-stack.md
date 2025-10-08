@@ -1,8 +1,8 @@
-# Technology Stack Recommendations
+# Technology Stack Documentation - HTMX & Alpine.js Migration
 
 ## Overview
 
-This document outlines the recommended technology stack for the Student Profile & Goal Tracking System. The approach prioritizes simplicity, reliability, and ease of maintenance using a traditional LAMP stack with modern best practices.
+This document outlines the modernized technology stack for the SaaS Application Template, migrating from jQuery-based interactivity to HTMX and Alpine.js while maintaining the proven LAMP stack foundation. This approach prioritizes simplicity, server-side rendering, and lightweight client-side interactivity.
 
 ## Core Stack Components
 
@@ -17,17 +17,19 @@ This document outlines the recommended technology stack for the Student Profile 
 - Modules required:
   - mod_rewrite (for clean URLs)
   - mod_ssl (for HTTPS)
-  - mod_headers (for security headers)
+  - mod_headers (for security headers and HTMX headers)
   - mod_deflate (for compression)
+  - mod_expires (for caching)
 
 #### Database
 - **MariaDB 10.6+**
 - Rationale: Drop-in MySQL replacement with better performance
 - InnoDB storage engine for transactional support
 - UTF8MB4 character set for full Unicode support
+- Optimized for concurrent team access
 
 #### Backend Language
-- **PHP 8.2+**
+- **PHP 8.1+**
 - Extensions required:
   - PDO and PDO_MySQL
   - mbstring (multi-byte string support)
@@ -38,298 +40,474 @@ This document outlines the recommended technology stack for the Student Profile 
   - session
   - ctype
   - filter
+  - zip (for exports)
 
 ## Frontend Technologies
 
 ### Core Framework
-- **Bootstrap 5.3.x** (already included in design folder)
+- **Bootstrap 5.3.x**
 - Responsive grid system
 - Pre-built components
 - Utility classes for rapid development
+- Modern, clean design language
 
-### JavaScript Library
-- **jQuery 3.7.1** (latest stable version)
-- Simplifies DOM manipulation
-- Extensive plugin ecosystem
-- AJAX functionality built-in
+### JavaScript Libraries
 
-### jQuery Plugins
-1. **jQuery Validation Plugin** (v1.19.5)
-   - Client-side form validation
-   - Custom validation rules
-   - Localization support
+#### Primary Interactivity Layer
+- **HTMX 1.9.x** (latest stable version)
+  - Server-driven UI updates
+  - AJAX without JavaScript
+  - WebSocket and SSE support
+  - Progressive enhancement
+  - Minimal client-side state
 
-2. **DataTables** (v1.13.x)
+- **Alpine.js 3.x**
+  - Lightweight reactive framework
+  - Component-based interactivity
+  - Simple state management
+  - Declarative syntax in HTML
+  - Perfect companion to HTMX
+
+#### Supporting Libraries (Minimal jQuery)
+- **jQuery 3.7.1** (ONLY for Bootstrap components)
+  - Bootstrap modal, dropdown, collapse support
+  - Will be phased out when Bootstrap 6 removes jQuery dependency
+  - Not used for custom application logic
+
+### HTMX-Compatible Components
+
+1. **Sortable.js** (replacing jQuery UI Sortable)
+   - Drag-and-drop for Kanban boards
+   - No jQuery dependency
+   - Touch-friendly
+   - Works with HTMX events
+
+2. **Tom Select** (replacing Select2)
+   - Enhanced select boxes
+   - No jQuery dependency
+   - Alpine.js integration
+   - AJAX data loading via HTMX
+
+3. **Pikaday** or **Flatpickr** (replacing jQuery Datepicker)
+   - Date picker functionality
+   - Lightweight
+   - Alpine.js compatible
+   - No dependencies
+
+4. **Tabulator** or **Grid.js** (replacing DataTables)
    - Advanced table functionality
-   - Sorting, filtering, pagination
+   - Server-side processing via HTMX
+   - Alpine.js integration for state
    - Export capabilities
 
-3. **Select2** (v4.1.x)
-   - Enhanced select boxes
-   - Search functionality
-   - Multi-select support
-
-4. **jQuery UI** (v1.13.x)
-   - Date picker for survey dates
-   - Sortable for drag-and-drop functionality
-   - Auto-complete for search
+5. **Vanilla Calendar Pro** or **FullCalendar** (v6 - no jQuery)
+   - Full-featured calendar
+   - HTMX for event loading
+   - Alpine.js for interactions
 
 ### Charts & Visualization
 - **Chart.js 4.x**
 - Lightweight and flexible
 - Responsive charts
-- Good jQuery integration
+- Alpine.js integration for updates
+- No jQuery dependency
+
+### Notification System
+- **Notyf** or **Alpine Toast** (replacing Toastr)
+- Lightweight notifications
+- No dependencies
+- Alpine.js integration
 
 ## Application Architecture
 
-### PHP Structure (Simple MVC)
+### PHP Structure (HTMX-Oriented MVC)
 ```
-html/
-├── index.php              # Main entry point
+project-root/
+├── index.php              # Main entry point & router
 ├── config/
 │   ├── database.php       # Database configuration
 │   ├── constants.php      # Application constants
-│   └── functions.php      # Global helper functions
+│   ├── functions.php      # Global helper functions
+│   └── htmx.php          # HTMX response helpers
 ├── includes/
-│   ├── header.php         # Common header
-│   ├── footer.php         # Common footer
+│   ├── header.php         # Common header with HTMX setup
+│   ├── footer.php         # Common footer with Alpine init
 │   ├── auth.php           # Authentication functions
-│   └── session.php        # Session management
+│   ├── session.php        # Session management
+│   └── csrf.php          # CSRF token handling
 ├── classes/
-│   ├── Database.php       # Database connection class
+│   ├── Database.php       # PDO database wrapper
 │   ├── User.php           # User model
-│   ├── Profile.php        # Profile model
-│   ├── Survey.php         # Survey model
-│   └── Resume.php         # Resume handling
+│   ├── Team.php           # Team model
+│   ├── Task.php           # Task model
+│   ├── Board.php          # Kanban board model
+│   ├── Event.php          # Calendar event model
+│   └── Notification.php   # Notification model
 ├── pages/
-│   ├── dashboard.php      # Main dashboard
-│   ├── profile.php        # Profile management
-│   ├── surveys.php        # Survey management
-│   └── reports.php        # Analytics/reports
-├── api/
+│   ├── auth/
+│   │   ├── login.php      # Login page (HTMX forms)
+│   │   ├── register.php   # Registration (HTMX validation)
+│   │   └── reset.php      # Password reset
+│   ├── dashboard.php      # Main dashboard (HTMX partials)
+│   ├── tasks.php          # Todo list view (HTMX updates)
+│   ├── kanban.php         # Kanban board (HTMX + Alpine)
+│   ├── calendar.php       # Calendar view (HTMX events)
+│   ├── teams.php          # Team management
+│   └── profile.php        # User profile
+├── partials/              # HTMX partial responses
+│   ├── task-row.php       # Single task row
+│   ├── task-list.php      # Task list partial
+│   ├── kanban-card.php    # Kanban card template
+│   ├── calendar-event.php # Calendar event partial
+│   ├── notification.php   # Notification item
+│   └── chart-data.php     # Chart update partial
+├── api/                   # HTMX endpoints
 │   ├── auth.php           # Authentication endpoints
-│   ├── profile.php        # Profile CRUD
-│   ├── survey.php         # Survey operations
-│   └── upload.php         # File upload handling
+│   ├── tasks.php          # Task CRUD (returns HTML)
+│   ├── kanban.php         # Kanban operations
+│   ├── calendar.php       # Event management
+│   ├── teams.php          # Team operations
+│   ├── notifications.php  # Notification endpoints
+│   ├── search.php         # Live search endpoint
+│   └── upload.php         # File upload handler
 ├── assets/
-│   ├── css/               # Custom CSS files
-│   ├── js/                # Custom JavaScript files
-│   └── images/            # Application images
+│   ├── css/
+│   │   ├── bootstrap.min.css
+│   │   ├── style.css      # Custom styles
+│   │   └── dark-theme.css # Dark theme
+│   ├── js/
+│   │   ├── htmx.min.js    # HTMX library
+│   │   ├── alpine.min.js  # Alpine.js library
+│   │   ├── app.js         # Main Alpine components
+│   │   └── bootstrap.bundle.min.js # Bootstrap (includes jQuery)
+│   └── images/
 ├── uploads/
-│   └── resumes/           # Uploaded resumes (outside web root in production)
-└── .htaccess              # Apache configuration
+│   ├── avatars/           # User avatars
+│   └── attachments/       # File attachments
+├── vendor/                # Composer packages
+├── logs/                  # Application logs
+└── .htaccess             # Apache configuration
 ```
 
 ### Database Schema Overview
 ```sql
 -- Core tables
-users                 # User accounts
-profiles              # Student profiles
-skills                # Skill definitions
-user_skills           # User-skill relationships
-goals                 # Goal entries
-surveys               # Survey definitions
-survey_questions      # Survey questions
-survey_responses      # Student responses
-resumes               # Resume uploads
-classes               # Class/course definitions
-class_enrollments     # Student-class relationships
+users                 # User accounts with authentication
+teams                 # Team/organization structure
+team_members          # User-team relationships
+roles                 # System roles
+user_roles            # Role assignments
+
+-- Task Management
+tasks                 # Core task data
+task_assignees        # Task assignments
+task_comments         # Comment thread
+task_attachments      # File attachments
+task_categories       # Categories/labels
+task_history          # Audit trail
+
+-- Kanban
+boards                # Board definitions
+board_columns         # Column configuration
+board_cards           # Card positions
+card_movements        # Movement history
+
+-- Calendar
+events                # Calendar events
+event_attendees       # Event participants
+event_reminders       # Reminder queue
+recurring_patterns    # Recurrence rules
+
+-- System
+notifications         # User notifications
+activity_logs         # Activity tracking
+user_preferences      # User settings
+sessions              # Active sessions
+password_resets       # Reset tokens
+email_queue          # Email processing
+```
+
+## HTMX Implementation Patterns
+
+### Form Submission with HTMX
+```html
+<form hx-post="/api/tasks.php"
+      hx-target="#task-list"
+      hx-swap="afterbegin"
+      hx-on::after-request="this.reset()">
+    <input type="text" name="title" required>
+    <button type="submit">Add Task</button>
+</form>
+```
+
+### Live Search
+```html
+<input type="search"
+       name="search"
+       hx-get="/api/search.php"
+       hx-trigger="input changed delay:500ms, search"
+       hx-target="#search-results"
+       placeholder="Search...">
+```
+
+### Infinite Scroll
+```html
+<div id="task-list"
+     hx-get="/api/tasks.php?page=2"
+     hx-trigger="revealed"
+     hx-swap="afterend">
+    <!-- Tasks loaded here -->
+</div>
+```
+
+### Real-time Updates with SSE
+```html
+<div hx-sse="connect:/api/notifications.php">
+    <div id="notification-count"
+         hx-sse="swap:notification">
+    </div>
+</div>
+```
+
+## Alpine.js Implementation Patterns
+
+### Component State Management
+```html
+<div x-data="taskManager()" x-init="loadTasks()">
+    <template x-for="task in tasks" :key="task.id">
+        <div class="task-item">
+            <span x-text="task.title"></span>
+            <button @click="deleteTask(task.id)">Delete</button>
+        </div>
+    </template>
+</div>
+
+<script>
+function taskManager() {
+    return {
+        tasks: [],
+        async loadTasks() {
+            // Fetch tasks via HTMX or directly
+        },
+        async deleteTask(id) {
+            // Delete via HTMX trigger
+        }
+    }
+}
+</script>
+```
+
+### Drag and Drop with Alpine
+```html
+<div x-data="kanbanBoard()">
+    <div class="kanban-column"
+         @drop="onDrop($event, 'todo')"
+         @dragover.prevent>
+        <div draggable="true"
+             @dragstart="onDragStart($event, task)">
+            <!-- Card content -->
+        </div>
+    </div>
+</div>
+```
+
+### Modal Management
+```html
+<div x-data="{ showModal: false }">
+    <button @click="showModal = true">Open Modal</button>
+
+    <div x-show="showModal"
+         x-transition
+         class="modal">
+        <div @click.away="showModal = false">
+            <!-- Modal content with HTMX form -->
+        </div>
+    </div>
+</div>
 ```
 
 ## Security Implementation
 
-### PHP Security
-1. **Password Hashing**
-   ```php
-   password_hash($password, PASSWORD_DEFAULT)
-   password_verify($password, $hash)
-   ```
+### HTMX Security Headers
+```php
+// HTMX CSRF protection
+header('X-CSRF-Token: ' . $_SESSION['csrf_token']);
 
-2. **SQL Injection Prevention**
-   - Use PDO prepared statements exclusively
-   - Input validation and sanitization
+// Check for HTMX request
+if (isset($_SERVER['HTTP_HX_REQUEST'])) {
+    // Return partial response
+}
 
-3. **Session Security**
-   ```php
-   session_set_cookie_params([
-       'lifetime' => 0,
-       'path' => '/',
-       'domain' => '',
-       'secure' => true,
-       'httponly' => true,
-       'samesite' => 'Lax'
-   ]);
-   ```
+// Trigger client-side events
+header('HX-Trigger: {"notification": "Task created"}');
+```
 
-4. **CSRF Protection**
-   - Token generation for all forms
-   - Token validation on submission
+### Alpine.js Security
+```javascript
+// Sanitize user input in Alpine components
+Alpine.data('secureComponent', () => ({
+    sanitize(input) {
+        const div = document.createElement('div');
+        div.textContent = input;
+        return div.innerHTML;
+    }
+}));
+```
 
-5. **File Upload Security**
-   - File type validation
-   - File size limits
-   - Rename uploaded files
-   - Store outside web root
+## Migration Strategy from jQuery
 
-### Frontend Security
-1. **Input Validation**
-   - jQuery Validation for client-side
-   - Server-side validation as primary defense
+### Phase 1: Parallel Implementation
+1. Keep existing jQuery functionality
+2. Add HTMX attributes to forms and links
+3. Introduce Alpine.js for new components
+4. Test thoroughly
 
-2. **XSS Prevention**
-   - htmlspecialchars() for output
-   - Content Security Policy headers
+### Phase 2: Progressive Replacement
+1. Replace jQuery AJAX with HTMX
+2. Convert jQuery plugins to Alpine components
+3. Migrate event handlers to Alpine
+4. Update DataTables to Grid.js/Tabulator
+
+### Phase 3: Complete Migration
+1. Remove jQuery except for Bootstrap
+2. Optimize HTMX responses
+3. Consolidate Alpine components
+4. Performance testing
+
+## Performance Optimization
+
+### HTMX Optimization
+```html
+<!-- Preload content -->
+<div hx-get="/api/data.php" hx-trigger="load">
+
+<!-- Debounce requests -->
+<input hx-get="/search" hx-trigger="keyup changed delay:500ms">
+
+<!-- Cache responses -->
+<div hx-get="/api/static.php" hx-boost="true">
+```
+
+### Alpine.js Optimization
+```javascript
+// Lazy load Alpine components
+document.addEventListener('alpine:init', () => {
+    Alpine.data('heavyComponent', () =>
+        import('./components/heavy.js')
+    );
+});
+```
 
 ## Development Tools
 
 ### Version Control
-- **Git** with structured branching
-- .gitignore for sensitive files
+```bash
+# .gitignore
+/config/database.php
+/uploads/
+/vendor/
+/logs/
+.env
+```
 
-### Development Environment
-- **Ubuntu 23.0.4 for local development
-- Match production PHP/MySQL versions
+### Local Development
+```php
+// config/database.php (local)
+define('DB_HOST', 'localhost:8889');
+define('DB_NAME', 'saas_template');
+define('DB_USER', 'root');
+define('DB_PASS', 'root');
+```
 
-### Code Quality
-- **PHP CodeSniffer** for style consistency
-- Basic PHPDoc documentation
-
-## Deployment Strategy
-
-### Simple Deployment
-1. Development on local LAMP stack
-2. Git push to repository
-3. Git pull on production server
-4. Run database migrations if needed
-5. Clear caches
-
-### Configuration Management
-- Environment-specific config files
-- .env file for sensitive data (not in Git)
-
-## Performance Optimization
-
-### Caching Strategy
-1. **Browser Caching**
-   - Apache mod_expires for static assets
-   - Versioned asset URLs
-
-2. **Database Optimization**
-   - Proper indexing
-   - Query optimization
-   - Connection pooling
-
-3. **PHP Performance**
-   - OPcache enabled
-   - Minimize file includes
-
-### Asset Optimization
-- Minified CSS/JS in production
-- Image optimization
-- Lazy loading for images
+### Composer Dependencies
+```json
+{
+    "require": {
+        "phpmailer/phpmailer": "^6.8",
+        "vlucas/phpdotenv": "^5.5",
+        "monolog/monolog": "^3.0"
+    }
+}
+```
 
 ## Monitoring & Maintenance
 
-### Logging
-- PHP error logging
-- Apache access/error logs
-- Application-level logging for debugging
+### HTMX Request Logging
+```php
+if (isset($_SERVER['HTTP_HX_REQUEST'])) {
+    error_log('HTMX Request: ' . $_SERVER['REQUEST_URI']);
+    error_log('HX-Trigger: ' . ($_SERVER['HTTP_HX_TRIGGER'] ?? 'none'));
+}
+```
 
-### Backup Strategy
-- Daily database backups
-- Weekly full backups
-- Automated backup scripts
-
-## jQuery Implementation Examples
-
-### AJAX Form Submission
+### Alpine.js Error Tracking
 ```javascript
-$('#profileForm').on('submit', function(e) {
-    e.preventDefault();
-    $.ajax({
-        url: '/api/profile.php',
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-            // Handle success
-        },
-        error: function(xhr, status, error) {
-            // Handle error
-        }
-    });
+Alpine.store('errors', {
+    items: [],
+    add(error) {
+        this.items.push(error);
+        console.error('Alpine Error:', error);
+    }
 });
 ```
 
-### DataTable Implementation
-```javascript
-$('#studentsTable').DataTable({
-    ajax: '/api/students.php',
-    columns: [
-        { data: 'name' },
-        { data: 'email' },
-        { data: 'program' },
-        { data: 'completion_rate' }
-    ],
-    responsive: true
-});
-```
+## Cost Comparison
 
-## Third-Party Services
+### Development Impact
+- **Learning Curve**: Minimal - HTMX is HTML attributes, Alpine is simpler than jQuery
+- **Development Speed**: Faster - less JavaScript to write
+- **Maintenance**: Easier - server-side logic, minimal client state
 
-### Email Service
-- **PHPMailer** for email functionality
-- SMTP configuration for reliability
+### Performance Benefits
+- **Bundle Size**:
+  - jQuery: ~90KB
+  - HTMX + Alpine: ~35KB combined
+- **Time to Interactive**: Faster with less JavaScript
+- **Server Load**: Slightly higher but offset by caching
 
-### Resume Parsing (Optional)
-- Simple regex-based parsing initially
-- Can upgrade to API service later
+## Migration Plan
 
-## Scalability Considerations
+### Week 1-2: Foundation
+- Install HTMX and Alpine.js
+- Create helper functions for HTMX responses
+- Set up partial templates structure
+- Implement basic HTMX forms
 
-### Phase 1 (MVP)
-- Single server deployment
-- Shared hosting compatible
+### Week 3-4: Core Features
+- Convert task CRUD to HTMX
+- Implement Alpine.js task components
+- Migrate search to HTMX live search
+- Convert modals to Alpine.js
 
-### Phase 2 (Growth)
-- Separate database server
-- CDN for static assets
+### Week 5: Kanban Board
+- Replace jQuery UI with Sortable.js
+- Implement HTMX updates for card moves
+- Alpine.js for card state management
 
-### Phase 3 (Scale)
-- Load balancing
-- Redis for session storage
-- Read replicas for database
+### Week 6: Calendar
+- Migrate to FullCalendar v6 (no jQuery)
+- HTMX for event loading
+- Alpine.js for event modals
 
-## Cost Estimation
+### Week 7: Tables & Forms
+- Replace DataTables with Grid.js
+- Convert Select2 to Tom Select
+- Implement Alpine validation
 
-### Local Development (MAMP)
-- **MAMP Configuration**: Used for local development
-- **Web Server**: http://localhost:3306
-- **MySQL Port**: 3306 
-- **Database**: students
-- **Username**: student
-- **Password**: #ClaudeCode123#
-
-### Hosting Options
-1. **Shared Hosting**: $10-20/month
-   - Suitable for MVP
-   - Limited resources
-
-2. **VPS**: $20-40/month
-   - Better performance
-   - Full control
-
-3. **Cloud (AWS/DigitalOcean)**: $40-100/month
-   - Scalable
-   - Professional grade
+### Week 8: Polish & Testing
+- Remove unnecessary jQuery code
+- Optimize HTMX responses
+- Performance testing
+- Documentation updates
 
 ## Conclusion
 
-This technology stack provides a solid foundation for the Student Profile & Goal Tracking System. It emphasizes:
+This technology stack modernizes the frontend while maintaining the reliable LAMP backend:
 
-- **Simplicity**: Using well-established technologies
-- **Reliability**: Proven LAMP stack
-- **Maintainability**: Clear structure and documentation
-- **Security**: Built-in best practices
-- **Scalability**: Growth path defined
+- **Simplicity**: HTMX reduces JavaScript complexity
+- **Performance**: Smaller bundle size, faster interactions
+- **Maintainability**: Server-side rendering, minimal client state
+- **Progressive Enhancement**: Works without JavaScript
+- **Modern UX**: Smooth interactions with Alpine.js
 
-The use of jQuery throughout provides consistency in JavaScript development while leveraging the extensive ecosystem of jQuery plugins for enhanced functionality.
+The migration from jQuery to HTMX/Alpine.js provides a more maintainable, performant, and modern application while keeping the simplicity that makes LAMP stack development efficient.
