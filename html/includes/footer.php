@@ -15,23 +15,53 @@
     </footer>
 
     <!-- Core JavaScript -->
-    <!-- jQuery -->
+    <!-- jQuery (kept for Bootstrap compatibility only) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- jQuery UI for drag and drop functionality -->
+    <!-- jQuery UI for drag and drop functionality (will be migrated to Sortable.js) -->
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
     <!-- jQuery UI CSS for datepicker -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
-    <!-- Chart.js for dashboard charts -->
+    <!-- Chart.js for dashboard charts (Alpine.js compatible) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-    <!-- Toastr for notifications -->
+    <!-- Toastr for notifications (will be migrated to Alpine Toast) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- HTMX Configuration -->
+    <script>
+    // Configure HTMX globally
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        // Add CSRF token to all HTMX requests
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            event.detail.headers['X-CSRF-Token'] = csrfToken.content;
+        }
+    });
+
+    // Global HTMX error handling
+    document.body.addEventListener('htmx:responseError', (event) => {
+        console.error('HTMX Error:', event.detail);
+        if (event.detail.xhr.status === 401) {
+            window.location.href = 'login.php?session_expired=1';
+        } else {
+            showNotification('An error occurred. Please try again.', 'error');
+        }
+    });
+
+    // Show success messages from server
+    document.body.addEventListener('htmx:afterSwap', (event) => {
+        const successMsg = event.detail.xhr.getResponseHeader('X-Success-Message');
+        if (successMsg) {
+            showNotification(successMsg, 'success');
+        }
+    });
+    </script>
 
     <!-- Main Application JavaScript -->
     <script>

@@ -85,11 +85,23 @@ if (isset($_SESSION['user_id'])) {
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/custom.css">
 
-    <!-- jQuery UI CSS for autocomplete -->
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+
+    <!-- jQuery UI CSS for autocomplete (will be migrated) -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
-    <!-- Toastr CSS for notifications -->
+    <!-- Toastr CSS for notifications (will be migrated to Alpine Toast) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <!-- HTMX CSRF Token -->
+    <meta name="htmx-config" content='{"getCacheBusterParam":true}'>
+    <?php if(isset($_SESSION['csrf_token'])): ?>
+    <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
+    <?php endif; ?>
 
     <!-- Page-specific CSS -->
     <style>

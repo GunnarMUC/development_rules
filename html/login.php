@@ -13,6 +13,11 @@ if (check_remember_token()) {
     header('Location: dashboard.php');
     exit();
 }
+
+// Generate CSRF token
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -29,6 +34,15 @@ if (check_remember_token()) {
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/custom.css">
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
 
     <style>
         body {
@@ -71,42 +85,67 @@ if (check_remember_token()) {
             transition: all 0.3s;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: #5a67d8;
             transform: translateY(-2px);
         }
 
-        .error-message {
-            display: none;
-            margin-top: 10px;
-        }
-
-        .spinner-border {
-            display: none;
-            width: 1rem;
-            height: 1rem;
-            margin-right: 5px;
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         #togglePassword {
             border-left: 0;
         }
+
+        .htmx-indicator {
+            display: none;
+        }
+
+        .htmx-request .htmx-indicator {
+            display: inline-block;
+        }
+
+        .htmx-request.htmx-indicator {
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo" id="logo-container">
+    <div class="login-container" x-data="loginForm()">
+        <div class="logo">
             <i class="bi bi-box-seam"></i>
             <h2 class="mt-3">Welcome Back</h2>
             <p class="text-muted">Login to your account</p>
         </div>
 
-        <form id="loginForm" novalidate>
-            <?php echo csrf_field(); ?>
+        <form hx-post="api/auth.php?action=login"
+              hx-target="#alert-container"
+              hx-swap="innerHTML"
+              hx-indicator="#loginBtn .spinner-border"
+              @submit="handleSubmit"
+              @htmx:after-request="handleResponse($event)">
 
-            <div id="alert-container"></div>
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 
-            <div class="alert alert-info" id="example-credentials">
+            <div id="alert-container">
+                <?php if (isset($_GET['timeout'])): ?>
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-clock-history me-2"></i>Your session has expired. Please login again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <?php endif; ?>
+
+                <?php if (isset($_GET['registered'])): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>Registration successful! Please login.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="alert alert-info">
                 <small>
                     <strong>Example:</strong><br>
                     Username: admin@localhost.com<br>
@@ -114,162 +153,168 @@ if (check_remember_token()) {
                 </small>
             </div>
 
-            <div class="mb-3" id="email-group">
+            <div class="mb-3">
                 <label for="email" class="form-label">Email Address</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    <input type="email" class="form-control" id="email" name="email" required placeholder="admin@localhost.com">
+                    <input type="email"
+                           class="form-control"
+                           :class="{ 'is-invalid': errors.email }"
+                           id="email"
+                           name="email"
+                           x-model="formData.email"
+                           @blur="validateEmail"
+                           required
+                           placeholder="admin@localhost.com">
                 </div>
-                <div class="invalid-feedback">
-                    Please enter a valid email address.
-                </div>
+                <div class="invalid-feedback" x-show="errors.email" x-text="errors.email"></div>
             </div>
 
-            <div class="mb-3" id="password-group">
+            <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                    <input type="password" class="form-control" id="password" name="password" required placeholder="#admin123!">
-                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                        <i class="bi bi-eye"></i>
+                    <input :type="showPassword ? 'text' : 'password'"
+                           class="form-control"
+                           :class="{ 'is-invalid': errors.password }"
+                           id="password"
+                           name="password"
+                           x-model="formData.password"
+                           @blur="validatePassword"
+                           required
+                           placeholder="#Admin123!">
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            @click="showPassword = !showPassword">
+                        <i class="bi" :class="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                     </button>
                 </div>
-                <div class="invalid-feedback">
-                    Password is required.
-                </div>
+                <div class="invalid-feedback" x-show="errors.password" x-text="errors.password"></div>
             </div>
 
-            <div class="mb-3 form-check" id="remember-group">
-                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+            <div class="mb-3 form-check">
+                <input type="checkbox"
+                       class="form-check-input"
+                       id="remember"
+                       name="remember"
+                       x-model="formData.remember">
                 <label class="form-check-label" for="remember">
                     Remember me
                 </label>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100" id="loginBtn">
-                <span class="spinner-border" role="status"></span>
-                Login
+            <button type="submit"
+                    class="btn btn-primary w-100"
+                    id="loginBtn"
+                    :disabled="!isValid || loading">
+                <span class="spinner-border spinner-border-sm htmx-indicator" role="status"></span>
+                <span x-show="!loading">Login</span>
+                <span x-show="loading">Logging in...</span>
             </button>
 
-            <div class="text-center mt-3" id="links-container">
+            <div class="text-center mt-3">
                 <a href="register.php" class="text-decoration-none">Don't have an account? Register</a>
             </div>
         </form>
     </div>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    <!-- Bootstrap Bundle with Popper -->
+    <!-- Bootstrap Bundle (includes jQuery for Bootstrap components only) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- jQuery Validation Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
-
     <script>
-    $(document).ready(function() {
-        // Toggle password visibility
-        $('#togglePassword').on('click', function() {
-            const passwordField = $('#password');
-            const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
-            passwordField.attr('type', type);
-            $(this).find('i').toggleClass('bi-eye bi-eye-slash');
-        });
+    function loginForm() {
+        return {
+            formData: {
+                email: '',
+                password: '',
+                remember: false
+            },
+            errors: {
+                email: '',
+                password: ''
+            },
+            showPassword: false,
+            loading: false,
 
-        // Form validation
-        $('#loginForm').validate({
-            rules: {
-                email: {
-                    required: true,
-                    email: true
-                },
-                password: {
-                    required: true,
-                    minlength: 8
+            validateEmail() {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!this.formData.email) {
+                    this.errors.email = 'Please enter your email address';
+                } else if (!emailRegex.test(this.formData.email)) {
+                    this.errors.email = 'Please enter a valid email address';
+                } else {
+                    this.errors.email = '';
                 }
             },
-            messages: {
-                email: {
-                    required: "Please enter your email address",
-                    email: "Please enter a valid email address"
-                },
-                password: {
-                    required: "Please enter your password",
-                    minlength: "Password must be at least 8 characters"
+
+            validatePassword() {
+                if (!this.formData.password) {
+                    this.errors.password = 'Please enter your password';
+                } else if (this.formData.password.length < 8) {
+                    this.errors.password = 'Password must be at least 8 characters';
+                } else {
+                    this.errors.password = '';
                 }
             },
-            errorClass: 'invalid-feedback',
-            errorElement: 'div',
-            highlight: function(element) {
-                $(element).addClass('is-invalid');
-            },
-            unhighlight: function(element) {
-                $(element).removeClass('is-invalid');
-            },
-            submitHandler: function(form) {
-                // Show loading state
-                const $btn = $('#loginBtn');
-                const $spinner = $btn.find('.spinner-border');
-                $btn.prop('disabled', true);
-                $spinner.show();
 
-                // Submit form via AJAX
-                $.ajax({
-                    url: 'api/auth.php',
-                    type: 'POST',
-                    data: $(form).serialize() + '&action=login',
-                    dataType: 'json',
-                    success: function(response) {
+            handleSubmit(event) {
+                // Validate all fields before submission
+                this.validateEmail();
+                this.validatePassword();
+
+                // If there are errors, prevent HTMX submission
+                if (this.errors.email || this.errors.password) {
+                    event.preventDefault();
+                    return false;
+                }
+
+                this.loading = true;
+            },
+
+            handleResponse(event) {
+                this.loading = false;
+
+                try {
+                    // Try to parse response as JSON (from api/auth.php)
+                    const xhr = event.detail.xhr;
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+
                         if (response.success) {
                             // Show success message
-                            $('#alert-container').html(
+                            document.getElementById('alert-container').innerHTML =
                                 '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
                                 '<i class="bi bi-check-circle me-2"></i>' + response.message +
                                 '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                                '</div>'
-                            );
+                                '</div>';
 
                             // Redirect to dashboard
-                            setTimeout(function() {
+                            setTimeout(() => {
                                 window.location.href = 'dashboard.php';
                             }, 1000);
                         } else {
                             // Show error message
-                            $('#alert-container').html(
+                            document.getElementById('alert-container').innerHTML =
                                 '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
                                 '<i class="bi bi-exclamation-triangle me-2"></i>' + response.message +
                                 '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                                '</div>'
-                            );
+                                '</div>';
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        $('#alert-container').html(
-                            '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                            '<i class="bi bi-exclamation-triangle me-2"></i>An error occurred. Please try again.' +
-                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                            '</div>'
-                        );
-                    },
-                    complete: function() {
-                        $btn.prop('disabled', false);
-                        $spinner.hide();
                     }
-                });
-            }
-        });
+                } catch (e) {
+                    console.error('Response parsing error:', e);
+                }
+            },
 
-        // Check for timeout parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('timeout') === '1') {
-            $('#alert-container').html(
-                '<div class="alert alert-warning alert-dismissible fade show" role="alert">' +
-                '<i class="bi bi-clock-history me-2"></i>Your session has expired. Please login again.' +
-                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                '</div>'
-            );
+            get isValid() {
+                return this.formData.email &&
+                       this.formData.password &&
+                       this.formData.password.length >= 8 &&
+                       !this.errors.email &&
+                       !this.errors.password;
+            }
         }
-    });
+    }
     </script>
 
     <!-- Footer -->
