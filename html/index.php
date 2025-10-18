@@ -254,7 +254,7 @@ if (isset($_SESSION['user_id'])) {
             <div id="hero-left" class="hero-left">
                 <h1 id="hero-title" class="hero-title">Task Management System</h1>
                 <p id="hero-subtitle" class="hero-subtitle">
-                    Streamline your workflow, collaborate with your team, and achieve your goals with our comprehensive task management platform.
+                    Welcome to the starter template for the Linux, Apache, MariaDb, HTMX, Bootstrap 5, and Alpine.js SaaS appication.
                 </p>
 
                 <ul id="feature-list" class="feature-list">

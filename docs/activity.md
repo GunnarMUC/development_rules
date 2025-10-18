@@ -1,5 +1,17 @@
 # Activity Log
 
+## 2025-10-18
+
+### User Prompt: On the landing page change "Streamline your workflow, collaborate with your team, and achieve your goals with our comprehensive task management platform." to "Welcome to the starter template for the Linux, Apache, MariaDb, HTMX, Bootstrap 5, and Alpine.js SaaS appication.
+
+**Actions Taken:**
+1. Located the text in /var/www/html/index.php (line 257 in the hero-subtitle div)
+2. Changed the text in the hero-subtitle paragraph from the task management platform message to the template welcome message
+3. Committed changes to git repository
+
+**Files Modified:**
+- /var/www/html/index.php - Updated hero subtitle text in landing page
+
 ## 2025-10-08
 
 ### User Prompt: We are continuing this project your instructions include automatically pushing to git please setup and test username authentication, my username is ehonour, my password is Loipol229!, my full name is Edward Honour, and my email is edward.honour@kineticseas.com please setup git for authentication.
@@ -490,4 +502,54 @@ All of this has been replaced with:
 ### Actions Taken
 - Fixed the API parameter name from 'status' to 'filter_status' in completed-tasks.php
 - This ensures the page properly filters to show only completed tasks
+
+
+## 2025-10-10
+
+### User Prompt: When I go to the landing page the server hangs and never comes up.
+
+**Actions Taken:**
+1. Investigated index.php landing page for server-side issues
+2. Checked server response with curl - returns 200 OK successfully
+3. Verified HTML output is complete and valid (353 lines delivered)
+4. Tested for infinite redirects - none found
+5. Checked PHP syntax - no errors detected
+6. Examined Apache error and access logs - no errors reported
+7. Tested both root URL (/) and /index.php - both respond correctly
+8. Verified all resources (custom.css) are accessible and loading
+
+**Investigation Results:**
+- Server-side code is functioning correctly
+- HTTP responses are proper (200 OK)
+- No PHP errors or server hangs detected
+- HTML page is completely delivered to client
+- No redirect loops or configuration issues
+
+**Analysis:**
+The server is NOT hanging. The issue appears to be browser-specific or client-side:
+1. **Potential causes**:
+   - CDN resources (Bootstrap, Bootstrap Icons) may be slow/blocked
+   - JavaScript animations causing browser freeze
+   - Network timeout on external resources
+   - Browser compatibility or rendering issues
+
+2. **Server verification**:
+   - `curl http://localhost/index.php` returns full page successfully
+   - Page delivers all 353 lines of HTML
+   - All local assets (custom.css) are accessible
+   - No Apache/PHP errors in logs
+
+**Recommendation:**
+Need additional information from user:
+- Which browser and version are they using?
+- Are there any console errors in browser developer tools?
+- Does the page load partially or show a blank screen?
+- Network tab - are there any resources stuck in "pending" state?
+- Is this happening on local network or remote access?
+
+**Files Modified:**
+- /var/www/tasks/todo.md - Documented investigation and findings
+
+**Status:**
+Investigation complete - awaiting user feedback on specific browser/network errors to proceed with fix.
 
