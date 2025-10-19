@@ -268,7 +268,7 @@ if (isset($_SESSION['user_id'])) {
                 <div id="stats-row" class="stats-row">
                     <div id="stat-1" class="stat-item">
                         <span class="stat-number">PHP</span>
-                        <span class="stat-label">Active Users</span>
+                        <span class="stat-label">Backend Language</span>
                     </div>
                     <div id="stat-2" class="stat-item">
                         <span class="stat-number">HTML</span>
