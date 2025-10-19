@@ -271,12 +271,12 @@ if (isset($_SESSION['user_id'])) {
                         <span class="stat-label">Backend Language</span>
                     </div>
                     <div id="stat-2" class="stat-item">
-                        <span class="stat-number">HTML</span>
-                        <span class="stat-label">Tasks Completed</span>
+                        <span class="stat-number">HTMX</span>
+                        <span class="stat-label">Javascript Framework</span>
                     </div>
                     <div id="stat-3" class="stat-item">
-                        <span class="stat-number">Javascript</span>
-                        <span class="stat-label">Uptime</span>
+                        <span class="stat-number">Bootstrap 5.3</span>
+                        <span class="stat-label">Responsive Framework</span>
                     </div>
                 </div>
             </div>

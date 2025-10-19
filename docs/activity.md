@@ -2,17 +2,19 @@
 
 ## 2025-10-18
 
-### User Prompt: On the landing page change "Streamline your workflow, collaborate with your team, and achieve your goals with our comprehensive task management platform." to "Welcome to the starter template for the Linux, Apache, MariaDb, HTMX, Bootstrap 5, and Alpine.js SaaS appication." Also change "Join thousands of teams already using our platform to boost productivity" to "Use this template for the widest range of large applications." Also change "Active Users" to "Backend Language"
+### User Prompt: On the landing page change "Streamline your workflow, collaborate with your team, and achieve your goals with our comprehensive task management platform." to "Welcome to the starter template for the Linux, Apache, MariaDb, HTMX, Bootstrap 5, and Alpine.js SaaS appication." Also change "Join thousands of teams already using our platform to boost productivity" to "Use this template for the widest range of large applications." Also change "Active Users" to "Backend Language". Change "HTML" to "HTMX" and "TASKS COMPLETED" to "Javascript Framework" and "Javascript" to "Bootstrap 5.3" and "UPTIME" to "Responsive Framework"
 
 **Actions Taken:**
 1. Located the text in /var/www/html/index.php (line 257 in the hero-subtitle div)
 2. Changed the text in the hero-subtitle paragraph from the task management platform message to the template welcome message
 3. Located and changed the welcome-subtitle text on line 287 from "Join thousands of teams already using our platform to boost productivity" to "Use this template for the widest range of large applications."
 4. Changed the stat-label on line 271 from "Active Users" to "Backend Language"
-5. Committed changes to git repository
+5. Changed stat-2: stat-number from "HTML" to "HTMX" and stat-label from "Tasks Completed" to "Javascript Framework"
+6. Changed stat-3: stat-number from "Javascript" to "Bootstrap 5.3" and stat-label from "Uptime" to "Responsive Framework"
+7. Committed changes to git repository
 
 **Files Modified:**
-- /var/www/html/index.php - Updated hero subtitle, welcome subtitle, and stat label text in landing page
+- /var/www/html/index.php - Updated hero subtitle, welcome subtitle, and all three stats on landing page
 
 ## 2025-10-08
 
