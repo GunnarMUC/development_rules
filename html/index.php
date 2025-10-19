@@ -284,7 +284,7 @@ if (isset($_SESSION['user_id'])) {
             <div id="hero-right" class="hero-right">
                 <div id="login-form-section" class="login-form-section">
                     <h2 id="welcome-title">Get Started Today!</h2>
-                    <p id="welcome-subtitle">Join thousands of teams already using our platform to boost productivity</p>
+                    <p id="welcome-subtitle">Use this template for the widest range of large applications.</p>
 
                     <?php if (isset($_GET['registered']) && $_GET['registered'] == 'success'): ?>
                         <div id="success-alert" class="alert alert-success">

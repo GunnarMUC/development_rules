@@ -2,15 +2,16 @@
 
 ## 2025-10-18
 
-### User Prompt: On the landing page change "Streamline your workflow, collaborate with your team, and achieve your goals with our comprehensive task management platform." to "Welcome to the starter template for the Linux, Apache, MariaDb, HTMX, Bootstrap 5, and Alpine.js SaaS appication.
+### User Prompt: On the landing page change "Streamline your workflow, collaborate with your team, and achieve your goals with our comprehensive task management platform." to "Welcome to the starter template for the Linux, Apache, MariaDb, HTMX, Bootstrap 5, and Alpine.js SaaS appication." Also change "Join thousands of teams already using our platform to boost productivity" to "Use this template for the widest range of large applications."
 
 **Actions Taken:**
 1. Located the text in /var/www/html/index.php (line 257 in the hero-subtitle div)
 2. Changed the text in the hero-subtitle paragraph from the task management platform message to the template welcome message
-3. Committed changes to git repository
+3. Located and changed the welcome-subtitle text on line 287 from "Join thousands of teams already using our platform to boost productivity" to "Use this template for the widest range of large applications."
+4. Committed changes to git repository
 
 **Files Modified:**
-- /var/www/html/index.php - Updated hero subtitle text in landing page
+- /var/www/html/index.php - Updated hero subtitle and welcome subtitle text in landing page
 
 ## 2025-10-08
 
