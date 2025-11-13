@@ -1,32 +1,19 @@
 <?php
-session_start();
+require_once 'includes/session.php';
 require_once 'includes/auth.php';
 
 // Check if user is logged in
 require_login();
 
-$pageTitle = 'My Tasks';
+$page_title = 'My Tasks';
 $currentPage = 'my-tasks';
+
+// Include header
+include_once 'includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?> - Task Management</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Removed DataTables CSS - using standard Bootstrap 5 tables -->
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-    <!-- Custom CSS -->
-    <link href="assets/css/custom.css" rel="stylesheet">
-
-    <style>
+<!-- Additional CSS for My Tasks -->
+<style>
         .priority-low { color: #6c757d; }
         .priority-medium { color: #17a2b8; }
         .priority-high { color: #ffc107; }
@@ -71,13 +58,10 @@ $currentPage = 'my-tasks';
             color: #dc3545;
             font-weight: 500;
         }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <?php include 'includes/header.php'; ?>
+</style>
 
-    <div class="container-fluid">
+<!-- Main Container -->
+<div class="container-fluid">
         <div class="row">
             <!-- Main Content (Full Width - No Sidebar) -->
             <main class="col-12 px-md-4 mt-3">
@@ -242,19 +226,14 @@ $currentPage = 'my-tasks';
         </div>
     </div>
 
-    <!-- Footer -->
-    <?php include 'includes/footer.php'; ?>
+<?php include_once 'includes/footer.php'; ?>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Additional JS libraries AFTER footer.php loads jQuery/Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
+<!-- Page specific scripts -->
+<script>
     $(document).ready(function() {
         let allTasks = [];
         let currentPage = 1;
@@ -605,5 +584,3 @@ $currentPage = 'my-tasks';
         setInterval(loadStatistics, 30000);
     });
     </script>
-</body>
-</html>
