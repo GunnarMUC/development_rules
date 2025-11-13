@@ -307,6 +307,8 @@ include_once 'includes/header.php';
 <div class="modal-backdrop fade"
      :class="{ 'show': showAddModal }"
      x-show="showAddModal"
+     x-cloak
+     style="display: none;"
      @click="showAddModal = false"></div>
 
 <script>

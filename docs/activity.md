@@ -42,8 +42,25 @@ User reported fix still not working. Checked PHP error logs and HTTP response. F
 **Additional Fix:**
 Fixed incorrect redirect paths in session.php require_login() function (lines 187, 193).
 
+**Fourth Investigation (FINAL ROOT CAUSE):**
+After extensive debugging with console logs, discovered that Bootstrap dropdowns were being initialized correctly and could be triggered programmatically. However, clicks on navbar dropdowns were not reaching the elements. Used `document.elementFromPoint()` to check what element was at the dropdown position and found: **Alpine.js modal-backdrop was covering the entire page**, blocking all clicks!
+
+The modal-backdrop had `x-show="showAddModal"` but Alpine.js's x-show uses `display:none` to hide elements, not removing them from the DOM. Before Alpine initialized, the backdrop existed in the DOM without display:none, blocking clicks with a higher z-index than the navbar.
+
+**Actual Root Cause:**
+Alpine.js modal-backdrop in tasks.php (line 307-310) exists in DOM before Alpine initializes, blocking all clicks on navbar dropdowns despite being "hidden" by x-show directive.
+
+**Final Solution:**
+1. Added `style="display: none;"` to modal-backdrop in tasks.php to hide it before Alpine initializes
+2. Added `x-cloak` directive for proper Alpine initialization handling
+3. Kept manual Bootstrap dropdown initialization as defense-in-depth
+
+**Verification:**
+Checked all other PHP files - only tasks.php has this issue because it's the only page with Alpine.js-controlled modal-backdrop. Other pages use standard Bootstrap modals or no modals.
+
 **Files Modified (Final):**
-- /var/www/html/includes/footer.php - Added manual dropdown initialization for all dropdown elements
+- /var/www/html/tasks.php - Fixed modal-backdrop blocking clicks (line 307-312)
+- /var/www/html/includes/footer.php - Added manual dropdown initialization and autocomplete check
 - /var/www/html/includes/session.php - Fixed redirect paths from /html/login.php to /login.php
 
 ## 2025-10-18

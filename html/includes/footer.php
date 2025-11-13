@@ -422,7 +422,7 @@
         loadNotificationCount();
 
         // Fix: Manually initialize all Bootstrap dropdowns
-        // Bootstrap 5 should auto-initialize, but for some reason it's not working on this page
+        // Bootstrap 5 should auto-initialize, but on pages with Alpine.js it doesn't work
         if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
             document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function(dropdownToggle) {
                 if (!bootstrap.Dropdown.getInstance(dropdownToggle)) {
