@@ -420,6 +420,16 @@
 
         // Initial load
         loadNotificationCount();
+
+        // Fix: Manually initialize all Bootstrap dropdowns
+        // Bootstrap 5 should auto-initialize, but for some reason it's not working on this page
+        if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function(dropdownToggle) {
+                if (!bootstrap.Dropdown.getInstance(dropdownToggle)) {
+                    new bootstrap.Dropdown(dropdownToggle);
+                }
+            });
+        }
     });
 
     // Utility functions

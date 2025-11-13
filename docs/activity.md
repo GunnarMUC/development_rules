@@ -25,7 +25,19 @@ Added existence check `if ($('#global-search-input').length)` before autocomplet
 - /var/www/.claude/skills/debugger/skill.yaml - Created debugger skill
 - /var/www/.claude/skills/debugger/prompt.md - Created debugger skill prompt
 
-**Result:** Navbar dropdowns now work correctly on tasks.php.
+**Result:** Initial fix did not resolve the issue. Continued investigation revealed:
+
+**Second Investigation:**
+User reported navbar still not working and provided console log showing notifications API 400 error. Added debug statements to test Bootstrap initialization. Found that Bootstrap loads correctly BUT dropdowns are not being auto-initialized (instance is null).
+
+**Actual Root Cause:**
+Alpine.js (with `defer` attribute) interferes with Bootstrap 5's automatic dropdown initialization. On pages using `x-data` directive (tasks.php, create-task.php), Bootstrap's auto-initialization fails to create dropdown instances, even though Bootstrap is loaded correctly.
+
+**Final Fix:**
+Manually initialize all Bootstrap dropdowns in footer.php after DOM ready (line 424-432). This ensures dropdowns work on pages with Alpine.js by explicitly creating Bootstrap.Dropdown instances for all `[data-bs-toggle="dropdown"]` elements.
+
+**Files Modified (Final):**
+- /var/www/html/includes/footer.php - Added manual dropdown initialization for all dropdown elements
 
 ## 2025-10-18
 
