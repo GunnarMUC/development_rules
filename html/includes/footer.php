@@ -213,43 +213,44 @@
         // Team switching code has been disabled
 
         // Global Search with jQuery UI Autocomplete
-        $('#global-search-input').autocomplete({
-            minLength: 2,
-            delay: 300,
-            source: function(request, response) {
-                $.ajax({
-                    url: '/api/search.php',
-                    dataType: 'json',
-                    data: {
-                        q: request.term
-                    },
-                    success: function(data) {
-                        response($.map(data.results, function(item) {
-                            return {
-                                label: item.label,
-                                value: item.label,
-                                type: item.type,
-                                description: item.description,
-                                icon: item.icon,
-                                category: item.category,
-                                badge: item.badge,
-                                badge_class: item.badge_class,
-                                url: item.url
-                            };
-                        }));
+        if ($('#global-search-input').length) {
+            $('#global-search-input').autocomplete({
+                minLength: 2,
+                delay: 300,
+                source: function(request, response) {
+                    $.ajax({
+                        url: '/api/search.php',
+                        dataType: 'json',
+                        data: {
+                            q: request.term
+                        },
+                        success: function(data) {
+                            response($.map(data.results, function(item) {
+                                return {
+                                    label: item.label,
+                                    value: item.label,
+                                    type: item.type,
+                                    description: item.description,
+                                    icon: item.icon,
+                                    category: item.category,
+                                    badge: item.badge,
+                                    badge_class: item.badge_class,
+                                    url: item.url
+                                };
+                            }));
+                        }
+                    });
+                },
+                select: function(event, ui) {
+                    if (ui.item.url) {
+                        window.location.href = ui.item.url;
                     }
-                });
-            },
-            select: function(event, ui) {
-                if (ui.item.url) {
-                    window.location.href = ui.item.url;
+                    return false;
+                },
+                focus: function(event, ui) {
+                    event.preventDefault();
                 }
-                return false;
-            },
-            focus: function(event, ui) {
-                event.preventDefault();
-            }
-        }).data('ui-autocomplete')._renderItem = function(ul, item) {
+            }).data('ui-autocomplete')._renderItem = function(ul, item) {
             var html = '<div class="ui-menu-item-wrapper">';
             html += '<i class="' + item.icon + ' search-result-icon"></i>';
             html += '<div class="search-result-content">';
@@ -266,6 +267,7 @@
 
             return $('<li>').html(html).appendTo(ul);
         };
+        }
 
         // Toastr Configuration
         toastr.options = {

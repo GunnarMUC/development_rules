@@ -6,30 +6,26 @@
 
 **Actions Taken:**
 1. Created debugger skill infrastructure in `.claude/skills/debugger/` with skill.yaml and prompt.md
-2. Added debug statements to tasks.php (lines 313-316) to check JavaScript load timing
-3. Added debug statements to footer.php (lines 68-82) to verify Bootstrap initialization
-4. Created test files: test_debug_navbar_20251113.html and test_debug_tasks_output.php for isolated testing
-5. Analyzed code structure and compared tasks.php with working pages (dashboard.php, my-tasks.php)
-6. Identified that tasks.php is the ONLY page using Alpine.js with `x-data="tasksPage()"`
-7. Discovered Alpine.js/Bootstrap conflict: modal uses both Alpine directives (`:class`, `:style`, `@click`) AND Bootstrap classes
-8. Removed all debug statements from tasks.php and footer.php
-9. Deleted test files: test_debug_navbar_20251113.html and test_debug_tasks_output.php
+2. Added debug statements to investigate JavaScript load timing and Alpine.js/Bootstrap interaction
+3. Created test files for isolated testing (later deleted)
+4. Initially hypothesized Alpine.js/Bootstrap conflict (incorrect)
+5. User provided actual console error: jQuery autocomplete `_renderItem` error
+6. Identified root cause: footer.php tries to initialize jQuery UI autocomplete on `#global-search-input` element that doesn't exist on tasks.php
+7. Fixed by adding existence check before autocomplete initialization
+8. Removed all debug code
 
 **Root Cause Identified:**
-Alpine.js event handling and DOM manipulation conflicts with Bootstrap 5's dropdown initialization on the navbar. The modal in tasks.php uses both Alpine directives and Bootstrap classes, causing Alpine.js (loaded with `defer`) to interfere with Bootstrap's event listeners when it scans the DOM.
+Footer.php contains code that initializes jQuery UI autocomplete on `#global-search-input` element without checking if the element exists. On tasks.php (and potentially other pages), this element doesn't exist, causing `$('#global-search-input').autocomplete().data('ui-autocomplete')` to return `undefined`. Attempting to set `._renderItem` on `undefined` throws a JavaScript error that stops all subsequent JavaScript execution, preventing Bootstrap dropdown initialization.
 
-**Fix Strategy Recommended:**
-- Option A: Remove Alpine.js from tasks.php modal and use Bootstrap's native modal JavaScript API
-- Option B: Add `x-cloak` and ensure proper initialization order with `$dispatch`
-- Option C: Move modal outside `x-data` scope to isolate Alpine component
+**Fix Applied:**
+Added existence check `if ($('#global-search-input').length)` before autocomplete initialization in footer.php (line 216). This prevents the JavaScript error on pages without the global search input element.
 
 **Files Modified:**
-- /var/www/html/tasks.php - Removed debug statements
-- /var/www/html/includes/footer.php - Removed debug statements
+- /var/www/html/includes/footer.php - Added existence check for global-search-input before autocomplete initialization
 - /var/www/.claude/skills/debugger/skill.yaml - Created debugger skill
 - /var/www/.claude/skills/debugger/prompt.md - Created debugger skill prompt
 
-**Note:** Bug identified but NOT fixed - awaiting user decision on fix strategy.
+**Result:** Navbar dropdowns now work correctly on tasks.php.
 
 ## 2025-10-18
 
