@@ -184,13 +184,13 @@ function set_user_default_team($user_id) {
  */
 function require_login() {
     if (!is_logged_in()) {
-        header('Location: /html/login.php');
+        header('Location: /login.php');
         exit();
     }
 
     // Check session timeout
     if (!check_session_timeout()) {
-        header('Location: /html/login.php?timeout=1');
+        header('Location: /login.php?timeout=1');
         exit();
     }
 }

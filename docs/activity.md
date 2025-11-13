@@ -36,8 +36,15 @@ Alpine.js (with `defer` attribute) interferes with Bootstrap 5's automatic dropd
 **Final Fix:**
 Manually initialize all Bootstrap dropdowns in footer.php after DOM ready (line 424-432). This ensures dropdowns work on pages with Alpine.js by explicitly creating Bootstrap.Dropdown instances for all `[data-bs-toggle="dropdown"]` elements.
 
+**Third Investigation:**
+User reported fix still not working. Checked PHP error logs and HTTP response. Found tasks.php returns 302 redirect due to authentication requirement. Discovered incorrect redirect path in require_login() function redirecting to `/html/login.php` instead of `/login.php` (causing 404).
+
+**Additional Fix:**
+Fixed incorrect redirect paths in session.php require_login() function (lines 187, 193).
+
 **Files Modified (Final):**
 - /var/www/html/includes/footer.php - Added manual dropdown initialization for all dropdown elements
+- /var/www/html/includes/session.php - Fixed redirect paths from /html/login.php to /login.php
 
 ## 2025-10-18
 
