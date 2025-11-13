@@ -1,5 +1,36 @@
 # Activity Log
 
+## 2025-11-13
+
+### User Prompt: When loading /tasks.php the top navbar stops working. Please use the debugger skill to find and fix the error.
+
+**Actions Taken:**
+1. Created debugger skill infrastructure in `.claude/skills/debugger/` with skill.yaml and prompt.md
+2. Added debug statements to tasks.php (lines 313-316) to check JavaScript load timing
+3. Added debug statements to footer.php (lines 68-82) to verify Bootstrap initialization
+4. Created test files: test_debug_navbar_20251113.html and test_debug_tasks_output.php for isolated testing
+5. Analyzed code structure and compared tasks.php with working pages (dashboard.php, my-tasks.php)
+6. Identified that tasks.php is the ONLY page using Alpine.js with `x-data="tasksPage()"`
+7. Discovered Alpine.js/Bootstrap conflict: modal uses both Alpine directives (`:class`, `:style`, `@click`) AND Bootstrap classes
+8. Removed all debug statements from tasks.php and footer.php
+9. Deleted test files: test_debug_navbar_20251113.html and test_debug_tasks_output.php
+
+**Root Cause Identified:**
+Alpine.js event handling and DOM manipulation conflicts with Bootstrap 5's dropdown initialization on the navbar. The modal in tasks.php uses both Alpine directives and Bootstrap classes, causing Alpine.js (loaded with `defer`) to interfere with Bootstrap's event listeners when it scans the DOM.
+
+**Fix Strategy Recommended:**
+- Option A: Remove Alpine.js from tasks.php modal and use Bootstrap's native modal JavaScript API
+- Option B: Add `x-cloak` and ensure proper initialization order with `$dispatch`
+- Option C: Move modal outside `x-data` scope to isolate Alpine component
+
+**Files Modified:**
+- /var/www/html/tasks.php - Removed debug statements
+- /var/www/html/includes/footer.php - Removed debug statements
+- /var/www/.claude/skills/debugger/skill.yaml - Created debugger skill
+- /var/www/.claude/skills/debugger/prompt.md - Created debugger skill prompt
+
+**Note:** Bug identified but NOT fixed - awaiting user decision on fix strategy.
+
 ## 2025-10-18
 
 ### User Prompt: On the landing page change "Streamline your workflow, collaborate with your team, and achieve your goals with our comprehensive task management platform." to "Welcome to the starter template for the Linux, Apache, MariaDb, HTMX, Bootstrap 5, and Alpine.js SaaS appication." Also change "Join thousands of teams already using our platform to boost productivity" to "Use this template for the widest range of large applications." Also change "Active Users" to "Backend Language". Change "HTML" to "HTMX" and "TASKS COMPLETED" to "Javascript Framework" and "Javascript" to "Bootstrap 5.3" and "UPTIME" to "Responsive Framework"
