@@ -25,11 +25,16 @@ Copy the entire `Development_Rules/` folder into every new project. This ensures
    - AI-specific guidance for the coding assistant
    - Update the content to match your preferred AI tool
 
+5. **`Development_Rules/README.md`**
+   - Documentation for the Development_Rules folder itself
+   - Explains the purpose of each file in the template
+
 ## Recommended Project Structure
 
 ```bash
 new-project/
 ├── Development_Rules/              # ← Copy this entire folder
+│   ├── README.md                   # Documentation for this template
 │   ├── copilot-instructions.md
 │   ├── playbook_new.md
 │   ├── playbook.md
