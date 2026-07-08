@@ -1,0 +1,7 @@
+
+# ===== Added by security audit 2026-07-08 =====
+# Prevent secrets leakage
+nohup.out
+*.log
+.env
+config.local.php
